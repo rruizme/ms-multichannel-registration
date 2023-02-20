@@ -2,6 +2,10 @@ package pe.com.nttdbank.resource;
 
 import java.net.URI;
 
+import org.bson.types.ObjectId;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.logging.Logger;
+
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
@@ -15,10 +19,17 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import pe.com.nttdbank.model.User;
+import pe.com.nttdbank.repository.UserRepository;
 import pe.com.nttdbank.service.UserService;
 
 @Path("/user")
 public class UserResource {
+
+    @Inject
+    Logger logger;
+
+    @Inject
+    UserRepository userRepository;
 
     @Inject
     UserService userService;
@@ -30,7 +41,7 @@ public class UserResource {
     public Response createUser(User user) throws Exception {
 
         userService.createUser(user);
-        
+
         return Response.created(new URI("/" + user.userId)).build();
     }
 
@@ -44,43 +55,73 @@ public class UserResource {
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findUserById(@PathParam("id") Integer id) {
+    public Response findUserById(@PathParam("id") String id) {
 
         User user = userService.findUserById(id);
 
         return user != null ? Response.ok(user).build()
-                            : Response.status(Status.NOT_FOUND).build();
+                : Response.status(Status.NOT_FOUND).build();
         // return Response.ok(user).build();
     }
 
     // [evaluate to use this method for some user field]
-    //@GET
-    //@Path("/search/{debitCardNumber}")
-    //public Response search(@PathParam("debitCardNumber") String debitCardNumber) {
-    //    User user = repository.findByDebitCardNumber(debitCardNumber);
-    //    return user != null ? Response.ok(user).build()
-    //            : Response.status(Status.NOT_FOUND).build();
-    //}
+    // @GET
+    // @Path("/search/{debitCardNumber}")
+    // public Response search(@PathParam("debitCardNumber") String debitCardNumber)
+    // {
+    // User user = repository.findByDebitCardNumber(debitCardNumber);
+    // return user != null ? Response.ok(user).build()
+    // : Response.status(Status.NOT_FOUND).build();
+    // }
 
     @PUT
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response updateUser(@PathParam("id") Integer id, User user) {
+    public Response updateUser(@PathParam("id") String id, User user) {
 
-        user.userId = id;
-        userService.updateUser(user);
+        logger.info("[RRM] userId: " + user.userId);
+        user.userId = new ObjectId(id);
+        logger.info("[RRM] userId: " + user.userId);
+        userRepository.update(user);
+        logger.info("[RRM] pasó");
+
 
         return Response.ok(user).build();
+    }
+
+    /* [PRUEBA UPDATE]
+    @PUT
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response updateUser(@PathParam("id") String id, User user) {
+
+        logger.info("[RRM] user.userId 1: " + user.userId);
+        user.userId = new ObjectId(id);
+        logger.info("[RRM] user.userId 2: " + user.userId);
+        
+        // User userToUpdate = userService.updateUser(user);
+        userService.updateUser(user);
+
+        logger.info("[RRM] user.debitCardDueDate: " + user.debitCardDueDate);
+        logger.info("[RRM] user.debitCardNumber: " + user.debitCardNumber);
+        logger.info("[RRM] user.debitCardValidationCode: " + user.debitCardValidationCode);
+        logger.info("[RRM] user.identificationDocumentNumber: " + user.identificationDocumentNumber);
+        logger.info("[RRM] user.identificationDocumentType: " + user.identificationDocumentType);
+
+        return Response.ok(userService.updateUser(user)).build();
 
     }
+    */
 
     // @DELETE
     // @Path("/{id}")
-    // public Response delete(@PathParam("id") String id) {
-        // User user = userService.findById(id);
-        // repository.delete(user);
-        // return Response.noContent().build();
+    // public Response deleteUser(@PathParam("id") String id) {
+    // User user = userService.findById(id);
+    // repository.delete(user);
+    // return Response.noContent().build();
     // }
 }

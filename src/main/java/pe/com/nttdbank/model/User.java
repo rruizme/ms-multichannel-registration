@@ -1,33 +1,18 @@
 package pe.com.nttdbank.model;
 
-// import org.bson.codecs.pojo.annotations.BsonId;
-import org.bson.codecs.pojo.annotations.BsonProperty;
+import org.bson.types.ObjectId;
 
-import io.quarkus.mongodb.panache.PanacheMongoEntityBase;
 import io.quarkus.mongodb.panache.common.MongoEntity;
 
-@MongoEntity(collection = "usuario")
-public class User extends PanacheMongoEntityBase{
+@MongoEntity(collection = "user")
+public class User {
 
-    @BsonProperty("id")
-    //@BsonId
-    public Integer userId;
+    public ObjectId userId;
     public String debitCardNumber;
     public String debitCardDueDate;
     public String debitCardValidationCode;
-    public Character identificationDocumentType;
+    public String identificationDocumentType;
     public String identificationDocumentNumber;
-
-    public User() {
-
-    }
-
-    public User(Integer userId, String debitCardNumber, String debitCardDueDate, String debitCardValidationCode, Character identificationDocumentType, String identificationDocumentNumber) {
-        this.userId = userId;
-        this.debitCardNumber = debitCardNumber;
-        this.debitCardDueDate = debitCardDueDate;
-        this.debitCardValidationCode = debitCardValidationCode;
-        this.identificationDocumentType = identificationDocumentType;
-        this.identificationDocumentNumber = identificationDocumentNumber;
-    }
+    public Integer password;
+    public String debitCardPin;
 }
