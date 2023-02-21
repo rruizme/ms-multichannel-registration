@@ -1,11 +1,12 @@
 package pe.com.nttdbank.resource;
 
 import java.net.URI;
+import java.util.List;
 
 import org.bson.types.ObjectId;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
+import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
@@ -18,6 +19,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import pe.com.nttdbank.model.Login;
 import pe.com.nttdbank.model.User;
 import pe.com.nttdbank.repository.UserRepository;
 import pe.com.nttdbank.service.UserService;
@@ -46,11 +48,43 @@ public class UserResource {
     }
 
     @GET
+    @Path("/findBydebitCard/{debitCardNumber}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response findBydebitCardNumber(@PathParam("debitCardNumber") String debitCardNumber) {
+        User user = this.userService.findBydebitCardNumber(debitCardNumber);
+
+        return user != null ? Response.ok(user).build()
+                : Response.status(Status.NOT_FOUND).build();
+    }
+
+    @GET
+    @Path("/accesoApp")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response AccesoApp(Login login) {
+
+        boolean status = this.userService.AccesoApp(login.debitCardNumber, login.password);
+
+        return Response.ok(status).status(Status.ACCEPTED).build();
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Uni<List<User>> list() {
+        return userService.listAllUsers();
+    }
+
+    /* 
+    @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response listAllUsers() {
 
         return Response.ok(userService.listAllUsers()).build();
     }
+    */
 
     @GET
     @Path("/{id}")
